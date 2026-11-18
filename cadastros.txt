@@ -1,0 +1,6 @@
+{"email": "fghjkl", "salt": "6158aeb663866e83afa8f26ce532603d", "senha_hash": "4c676da84d14798d6552602694ce9feda621ceecaa1815583dbb552ef4f90e74"}
+{"email": "rafael@gmail.com", "senha": "6767"}
+{"email": "carlinhos@hotmail.com", "senha": "5678"}
+{"email": "flavindopneu@yahoo.fr", "senha": "senha"}
+{"email": "fafa@gmail.com", "senha": "1234"}
+{"email": "blablabla@gmail.com", "senha": "123456789"}
