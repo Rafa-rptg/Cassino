@@ -1,0 +1,136 @@
+from random import randint
+import os
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+
+CENTAVOS = Decimal("0.01")
+
+
+def dinheiro(valor):
+    return Decimal(valor).quantize(CENTAVOS, rounding=ROUND_HALF_UP)
+
+
+def ler_valor(pergunta):
+    while True:
+        try:
+            valor = Decimal(input(pergunta).strip().replace(",", "."))
+            if valor.is_finite() and valor >= 0:
+                return dinheiro(valor)
+        except (InvalidOperation, AttributeError):
+            pass
+        print("Digite um valor válido com duas casas decimais.")
+
+
+saldo = ler_valor("Insira quanto quer depositar para jogar: ")
+
+balan = 0
+jogadas = 0
+multi = 0
+
+while jogadas != 100:
+    print(f"Seu saldo atual é de R$ {dinheiro(saldo):.2f}")
+    valor = ler_valor("Quanto quer Apostar?  R$  ")
+    if valor > saldo:
+        print("Você não pode apostar mais do que possui.")
+        continue
+    if valor == 0:
+        print("A aposta deve ser maior que R$ 0,00.")
+        continue
+    os.system("cls")
+
+
+    if jogadas == 0 and valor <= 10:
+        sorte = 1
+        multi = Decimal("0.5")
+
+    elif jogadas == 1 and valor <= 10:
+        sorte = randint(0, 1)
+        multi = Decimal("1.5")
+
+    elif jogadas == 2 and valor >= 10:
+        sorte = randint(0, 9)
+        multi = Decimal("2.5")
+
+    else:
+
+        if valor <= 20:
+            if balan <= 3:
+                sorte = randint(0, 2)
+                multi = Decimal("1.3")
+            else:
+                sorte = randint(0, 3)
+                multi = Decimal("1.5")
+        elif valor <= 50:
+            if balan >= 10:
+                sorte = 1
+                multi = Decimal("1.2")
+            else:
+                sorte = randint(0, 4)
+                multi = Decimal("1.25")
+        elif valor <= 100:
+            sorte = randint(0, 9)
+            multi = Decimal("1.2")
+
+        elif valor <= 500:
+            sorte = randint(0, 25)
+            multi = Decimal("1.5")
+        else:
+            sorte = randint(0, 30)
+            multi = Decimal("1.25")
+
+    teste = randint(0, 5)
+    teste1 = randint(0, 5)
+    teste2 = randint(0, 5)
+
+    if sorte == 1:
+        teste1 = teste
+        teste2 = teste
+
+    print("---------------------------------É A BETZINHA COM AS MELHORES ODDS DO BRASIL------------------------------------")
+    print("-OFERECIMENTOS: RAFAEL CIMENTOS, ANDRÉ CARVALHOS, MINISTÉRIO DA SAÚDE, E O GOVERNO FEDERAL- (JOGOU POR QUE QUIS)")
+
+    print(teste, teste1, teste2)
+
+    print("-OFERECIMENTOS: RAFAEL CIMENTOS, ANDRÉ CARVALHOS, MINISTÉRIO DA SAÚDE, E O GOVERNO FEDERAL- (JOGOU POR QUE QUIS)")
+    if teste == teste1 and teste == teste2 and teste1 == teste2:
+
+        valor = dinheiro(valor * multi)
+        print('\x1b[1;30;42m' + 'Parabens' + '\x1b[0m' + f" voce ganhou R$ {dinheiro(valor):.2f}")
+        balan = 0
+
+
+
+    else:
+        print('\x1b[0;30;41m' + 'Poxa, não foi dessa vez.' + '\x1b[0m' + " Vamos outra?")
+        balan += 1
+        valor = valor * -1
+
+    print("    ")
+
+    saldo = dinheiro(saldo + valor)
+
+    jogadas += 1
+
+    # Quando o saldo zerar
+
+    if saldo <= 0:
+        jogar = str(input("seu saldo esta " + '\x1b[1;30;41m' + "negativo" + '\x1b[0m' ", deseja adicionar mais? (Y/N) "))
+        if jogar == "Y" or jogar == "y":
+            saldo = dinheiro(saldo + ler_valor("quanto deseja adicionar? "))
+            while saldo < 0:
+                print(f"Seu saldo atual é de R$ {dinheiro(saldo):.2f}")
+                print("valor ainda " '\x1b[1;30;41m' + "insuficiente" + '\x1b[0m')
+                perg = str(input("Adicionar mais? (Y/N) "))
+                if perg != "N" and perg != "n":
+                    saldo = dinheiro(saldo + ler_valor("quanto deseja adicionar? "))
+                else:
+                    if jogar == "N" and jogar != "N":
+                        print(f"Poxa, acabamos por aqui. Mas seu saldo final garantido pela BETZINHA™ foi: R$ {dinheiro(saldo):.2f}")
+                        print("---------------------------------É A BETZINHA COM AS MELHORES ODDS DO BRASIL------------------------------------")
+                        print("-OFERECIMENTOS: RAFAEL CIMENTOS, ANDRÉ CARVALHOS, MINISTÉRIO DA SAÚDE, E O GOVERNO FEDERAL- (JOGOU POR QUE QUIS)")
+        else:
+            break
+
+print(f"seu saldo final foi: R$ {dinheiro(saldo):.2f}")
+print("---------------------------------É A BETZINHA COM AS MELHORES ODDS DO BRASIL------------------------------------")
+print("-OFERECIMENTOS: RAFAEL CIMENTOS, ANDRÉ CARVALHOS, MINISTÉRIO DA SAÚDE, E O GOVERNO FEDERAL- (JOGOU POR QUE QUIS)")
+print("BÔNUS PARA VOCÊ! DEPOSITE R$ 66,66 NA CHAVE PIX: 666.666.667.69 ás 03:67 da madrugada e GANHE GARANTIDO, PODE CONFIAR")
