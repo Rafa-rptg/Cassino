@@ -1,0 +1,287 @@
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from random import randint
+import tkinter as tk
+from tkinter import messagebox, scrolledtext
+
+CENTAVOS = Decimal("0.01")
+MAX_JOGADAS = 100
+
+
+def dinheiro(valor):
+    return Decimal(valor).quantize(CENTAVOS, rounding=ROUND_HALF_UP)
+
+
+def parse_valor(texto):
+    try:
+        valor = Decimal(texto.strip().replace(",", "."))
+        if valor.is_finite() and valor >= 0:
+            return dinheiro(valor)
+    except (InvalidOperation, AttributeError):
+        pass
+    return None
+
+
+class BetzinhaApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("BETZINHA — Interface")
+        self.root.geometry("620x520")
+        self.root.resizable(False, False)
+
+        self.saldo = Decimal("0.00")
+        self.balan = 0
+        self.jogadas = 0
+        self.jogo_ativo = False
+
+        self._montar_interface()
+
+    def _montar_interface(self):
+        # Topo: Depósito inicial
+        frame_topo = tk.LabelFrame(self.root, text="1. Depósito Inicial", padx=10, pady=8)
+        frame_topo.pack(fill=tk.X, padx=12, pady=(10, 5))
+
+        tk.Label(frame_topo, text="Valor inicial (R$):").pack(side=tk.LEFT)
+        self.entry_deposito = tk.Entry(frame_topo, width=14, font=("Arial", 11))
+        self.entry_deposito.pack(side=tk.LEFT, padx=8)
+
+        self.btn_depositar = tk.Button(
+            frame_topo, text="Iniciar Jogo", command=self.iniciar_jogo
+        )
+        self.btn_depositar.pack(side=tk.LEFT)
+
+        # Status: Saldo e rodadas
+        frame_status = tk.Frame(self.root, padx=12, pady=4)
+        frame_status.pack(fill=tk.X)
+
+        self.lbl_saldo = tk.Label(
+            frame_status, text="Saldo: R$ 0,00", font=("Arial", 12, "bold"), fg="#1b5e20"
+        )
+        self.lbl_saldo.pack(side=tk.LEFT)
+
+        self.lbl_jogadas = tk.Label(
+            frame_status, text=f"Jogada: 0/{MAX_JOGADAS}", font=("Arial", 11)
+        )
+        self.lbl_jogadas.pack(side=tk.RIGHT)
+
+        # Visor dos números sorteados
+        frame_numeros = tk.LabelFrame(self.root, text="Resultado da Rodada", padx=10, pady=8)
+        frame_numeros.pack(fill=tk.X, padx=12, pady=5)
+
+        self.lbl_numeros = tk.Label(
+            frame_numeros,
+            text="-   -   -",
+            font=("Consolas", 26, "bold"),
+            fg="#111111",
+        )
+        self.lbl_numeros.pack()
+
+        self.lbl_resultado = tk.Label(
+            frame_numeros,
+            text="Faça um depósito para começar.",
+            font=("Arial", 11, "bold"),
+        )
+        self.lbl_resultado.pack(pady=(4, 0))
+
+        # Aposta
+        frame_aposta = tk.LabelFrame(self.root, text="2. Fazer Aposta", padx=10, pady=8)
+        frame_aposta.pack(fill=tk.X, padx=12, pady=5)
+
+        tk.Label(frame_aposta, text="Quanto quer apostar? R$").pack(side=tk.LEFT)
+        self.entry_aposta = tk.Entry(frame_aposta, width=14, font=("Arial", 11), state=tk.DISABLED)
+        self.entry_aposta.pack(side=tk.LEFT, padx=8)
+
+        self.btn_apostar = tk.Button(
+            frame_aposta,
+            text="Apostar",
+            command=self.jogar_rodada,
+            state=tk.DISABLED,
+            bg="#2e7d32",
+            fg="white",
+            font=("Arial", 10, "bold"),
+            padx=12,
+        )
+        self.btn_apostar.pack(side=tk.LEFT)
+
+        self.btn_encerrar = tk.Button(
+            frame_aposta, text="Encerrar", command=self.encerrar_jogo, state=tk.DISABLED
+        )
+        self.btn_encerrar.pack(side=tk.RIGHT)
+
+        # Log / Histórico (substitui os prints no terminal)
+        frame_log = tk.LabelFrame(self.root, text="Histórico / Mensagens", padx=10, pady=8)
+        frame_log.pack(fill=tk.BOTH, expand=True, padx=12, pady=(5, 12))
+
+        self.txt_log = scrolledtext.ScrolledText(
+            frame_log, state=tk.DISABLED, wrap=tk.WORD, font=("Consolas", 9)
+        )
+        self.txt_log.pack(fill=tk.BOTH, expand=True)
+
+    def log(self, mensagem):
+        self.txt_log.configure(state=tk.NORMAL)
+        self.txt_log.insert(tk.END, mensagem + "\n")
+        self.txt_log.see(tk.END)
+        self.txt_log.configure(state=tk.DISABLED)
+
+    def atualizar_status(self):
+        self.lbl_saldo.config(text=f"Saldo: R$ {dinheiro(self.saldo):.2f}")
+        self.lbl_jogadas.config(text=f"Jogada: {self.jogadas}/{MAX_JOGADAS}")
+
+    def iniciar_jogo(self):
+        valor = parse_valor(self.entry_deposito.get())
+        if valor is None or valor <= 0:
+            messagebox.showwarning("Valor inválido", "Digite um valor maior que R$ 0,00 (ex.: 50,00).")
+            return
+
+        self.saldo = dinheiro(valor)
+        self.balan = 0
+        self.jogadas = 0
+        self.jogo_ativo = True
+
+        self.txt_log.configure(state=tk.NORMAL)
+        self.txt_log.delete("1.0", tk.END)
+        self.txt_log.configure(state=tk.DISABLED)
+
+        self.entry_deposito.config(state=tk.DISABLED)
+        self.btn_depositar.config(state=tk.DISABLED)
+        self.entry_aposta.config(state=tk.NORMAL)
+        self.btn_apostar.config(state=tk.NORMAL)
+        self.btn_encerrar.config(state=tk.NORMAL)
+
+        self.atualizar_status()
+        self.log("É A BETZINHA COM AS MELHORES ODDS DO BRASIL")
+        self.log(f"Depósito inicial realizado: R$ {dinheiro(self.saldo):.2f}")
+
+    def calcular_sorte_e_multi(self, valor):
+        if self.jogadas == 0 and valor <= 10:
+            return 1, Decimal("0.5")
+        if self.jogadas == 1 and valor <= 10:
+            return randint(0, 1), Decimal("1.5")
+        if self.jogadas == 2 and valor >= 10:
+            return randint(0, 9), Decimal("2.5")
+
+        if valor <= 20:
+            if self.balan <= 3:
+                return randint(0, 2), Decimal("1.3")
+            return randint(0, 3), Decimal("1.5")
+        if valor <= 50:
+            if self.balan >= 10:
+                return 1, Decimal("1.2")
+            return randint(0, 4), Decimal("1.25")
+        if valor <= 100:
+            return randint(0, 9), Decimal("1.2")
+        if valor <= 500:
+            return randint(0, 25), Decimal("1.5")
+        return randint(0, 30), Decimal("1.25")
+
+    def jogar_rodada(self):
+        if not self.jogo_ativo:
+            return
+
+        aposta = parse_valor(self.entry_aposta.get())
+        if aposta is None:
+            messagebox.showwarning("Valor inválido", "Digite um valor válido com duas casas decimais.")
+            return
+        if aposta <= 0:
+            messagebox.showwarning("Aposta inválida", "A aposta deve ser maior que R$ 0,00.")
+            return
+        if aposta > self.saldo:
+            messagebox.showwarning("Saldo insuficiente", "Você não pode apostar mais do que possui.")
+            return
+
+        sorte, multi = self.calcular_sorte_e_multi(aposta)
+
+        teste = randint(0, 5)
+        teste1 = randint(0, 5)
+        teste2 = randint(0, 5)
+
+        if sorte == 1:
+            teste1 = teste
+            teste2 = teste
+
+        self.lbl_numeros.config(text=f"{teste}   {teste1}   {teste2}")
+
+        if teste == teste1 and teste == teste2:
+            ganho = dinheiro(aposta * multi)
+            self.saldo = dinheiro(self.saldo + ganho)
+            self.balan = 0
+            msg = f"Parabéns! Você ganhou R$ {ganho:.2f} (odd {multi}x)."
+            self.lbl_resultado.config(text=msg, fg="#1b5e20")
+            self.log(f"[Rodada {self.jogadas + 1}] Números: {teste} {teste1} {teste2} -> {msg}")
+        else:
+            self.saldo = dinheiro(self.saldo - aposta)
+            self.balan += 1
+            msg = f"Poxa, não foi dessa vez (-R$ {aposta:.2f}). Vamos outra?"
+            self.lbl_resultado.config(text=msg, fg="#b71c1c")
+            self.log(f"[Rodada {self.jogadas + 1}] Números: {teste} {teste1} {teste2} -> {msg}")
+
+        self.jogadas += 1
+        self.atualizar_status()
+        self.entry_aposta.delete(0, tk.END)
+
+        if self.saldo <= 0:
+            self._tratar_saldo_zerado()
+            return
+
+        if self.jogadas >= MAX_JOGADAS:
+            self.encerrar_jogo()
+
+    def _tratar_saldo_zerado(self):
+        while self.saldo <= 0:
+            quer_add = messagebox.askyesno(
+                "Saldo zerado ou negativo",
+                f"Seu saldo atual é R$ {dinheiro(self.saldo):.2f}.\nDeseja adicionar mais saldo?",
+            )
+            if not quer_add:
+                self.encerrar_jogo()
+                return
+
+            dialogo = tk.Toplevel(self.root)
+            dialogo.title("Adicionar Saldo")
+            dialogo.geometry("320x130")
+            dialogo.transient(self.root)
+            dialogo.grab_set()
+
+            tk.Label(dialogo, text="Quanto deseja adicionar? (R$)").pack(pady=(12, 4))
+            entrada = tk.Entry(dialogo, width=14, font=("Arial", 11))
+            entrada.pack()
+            entrada.focus()
+
+            resultado_add = {"valor": None}
+
+            def confirmar():
+                val = parse_valor(entrada.get())
+                if val is None or val <= 0:
+                    messagebox.showwarning("Valor inválido", "Digite um valor maior que R$ 0,00.", parent=dialogo)
+                    return
+                resultado_add["valor"] = val
+                dialogo.destroy()
+
+            tk.Button(dialogo, text="Adicionar", command=confirmar).pack(pady=10)
+            self.root.wait_window(dialogo)
+
+            if resultado_add["valor"] is None:
+                self.encerrar_jogo()
+                return
+
+            self.saldo = dinheiro(self.saldo + resultado_add["valor"])
+            self.atualizar_status()
+            self.log(f"Adicionado R$ {resultado_add['valor']:.2f}. Saldo atual: R$ {dinheiro(self.saldo):.2f}")
+
+    def encerrar_jogo(self):
+        self.jogo_ativo = False
+        self.btn_apostar.config(state=tk.DISABLED)
+        self.entry_aposta.config(state=tk.DISABLED)
+        self.btn_encerrar.config(state=tk.DISABLED)
+        self.entry_deposito.config(state=tk.NORMAL)
+        self.btn_depositar.config(state=tk.NORMAL)
+
+        self.atualizar_status()
+        self.log("-" * 55)
+        self.log(f"Jogo encerrado! Seu saldo final foi: R$ {dinheiro(self.saldo):.2f}")
+        self.log("É A BETZINHA COM AS MELHORES ODDS DO BRASIL")
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = BetzinhaApp(root)
+    root.mainloop()
