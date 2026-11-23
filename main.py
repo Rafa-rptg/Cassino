@@ -1,9 +1,9 @@
-
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 import re
 import json
+from gacha import iniciar_jogo
 
 # Configurações
 janela = tk.Tk()
@@ -157,50 +157,13 @@ def mostrar_tela_inicial():
     )
     botaocadastro.pack(side=tk.LEFT, padx=10, ipady=8)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 # TELA PRINCIPAL APÓS INICIAR *** MEXER AQUI ***
 def abrir_tela_principal(email_digitado):
-
     for widget in janela.winfo_children():
         widget.destroy()
 
-    janela.geometry("900x600")
-
-    barra_superior = tk.Frame(
-        janela,
-        bg="#151515"
-    )
-    barra_superior.pack(fill="x", padx=25, pady=20)
-    label_usuario = tk.Label(
-        barra_superior,
-        text=email_digitado,
-        font=("Montserrat", 11),
-        fg="white",
-        bg="#151515"
-    )
-    label_usuario.pack(side=tk.RIGHT)
-
-
-
-
-
-
-
-
-
-
+    janela.configure(bg="#151515")
+    iniciar_jogo(janela, email_digitado)
 
 ###############################################
 # FUNÇÃO INICIAR
