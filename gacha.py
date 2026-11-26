@@ -7,7 +7,7 @@ from PIL import Image, ImageTk
 CENTAVOS = Decimal("0.01")
 MAX_JOGADAS = 100
 
-# Paleta de cores baseada no main.py
+# Cores salvas pra ficar mais fácil de usar
 COR_FUNDO = "#151515"
 COR_CARD = "#202020"
 COR_BORDA = "#333333"
@@ -44,7 +44,7 @@ class BetzinhaApp:
         self.jogadas = 0
         self.jogo_ativo = False
 
-        # Carrega a logo mantendo referência no objeto para não sumir da tela
+        # Carrega a logo junto do objeto pra não sumir da tela
         try:
             img = Image.open("Logo_bet.png").resize((210, 70))
             self.logo_img = ImageTk.PhotoImage(img)
@@ -54,7 +54,7 @@ class BetzinhaApp:
         self._montar_interface()
 
     def _montar_interface(self):
-        # Cabeçalho com Logo e Boas-vindas
+        # Logo e boas vindas
         frame_header = tk.Frame(self.root, bg=COR_FUNDO)
         frame_header.pack(fill=tk.X, padx=30, pady=(15, 5))
 
@@ -452,7 +452,7 @@ class BetzinhaApp:
         self.log(f"Jogo encerrado! Seu saldo final foi: R$ {dinheiro(self.saldo):.2f}")
         self.log("É A BETZINHA COM AS MELHORES ODDS DO BRASIL")
 
-
+#iniciar o jogo no main.py
 def iniciar_jogo(root, email_usuario=None):
     BetzinhaApp(root, email_usuario)
 

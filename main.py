@@ -157,7 +157,7 @@ def mostrar_tela_inicial():
     )
     botaocadastro.pack(side=tk.LEFT, padx=10, ipady=8)
 
-# TELA PRINCIPAL APÓS INICIAR *** MEXER AQUI ***
+# TELA PRINCIPAL APÓS INICIAR
 def abrir_tela_principal(email_digitado):
     for widget in janela.winfo_children():
         widget.destroy()
@@ -165,7 +165,6 @@ def abrir_tela_principal(email_digitado):
     janela.configure(bg="#151515")
     iniciar_jogo(janela, email_digitado)
 
-###############################################
 # FUNÇÃO INICIAR
 def iniciar():
 
